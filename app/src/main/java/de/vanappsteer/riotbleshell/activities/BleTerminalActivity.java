@@ -1,5 +1,6 @@
 package de.vanappsteer.riotbleshell.activities;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -125,7 +127,8 @@ public class BleTerminalActivity extends AppCompatActivity {
         @Override
         public void onAllCharacteristicsWrote() {
 
-            mDeviceService.readCharacteristics();
+            List<BluetoothGattCharacteristic> list = mDeviceService.getReadableCharacteristicsList();
+            mDeviceService.readCharacteristics(list);
         }
 
         @Override

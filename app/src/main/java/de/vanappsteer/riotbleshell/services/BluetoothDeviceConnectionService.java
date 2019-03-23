@@ -112,7 +112,32 @@ public class BluetoothDeviceConnectionService extends Service {
         return mBluetoothGatt == null || mBluetoothGattService == null;
     }
 
-    public void readCharacteristics() {
+    public List<BluetoothGattCharacteristic> getCharacteristicsList() {
+
+        return mBluetoothGattService.getCharacteristics();
+    }
+
+    public List<BluetoothGattCharacteristic> getReadableCharacteristicsList() {
+
+        List<BluetoothGattCharacteristic> list = getCharacteristicsList();
+        list = list.stream()
+                .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
+                .collect(Collectors.toList());
+
+        return list;
+    }
+
+    public List<BluetoothGattCharacteristic> getWriteableCharacteristicsList() {
+
+        List<BluetoothGattCharacteristic> list = getCharacteristicsList();
+        list = list.stream()
+                .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
+                .collect(Collectors.toList());
+
+        return list;
+    }
+
+    public void readCharacteristics(List<BluetoothGattCharacteristic> list) {
 
         if (isDisconnected()) {
             mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
@@ -120,15 +145,9 @@ public class BluetoothDeviceConnectionService extends Service {
             return;
         }
 
-        List<BluetoothGattCharacteristic> characteristicList = mBluetoothGattService.getCharacteristics();
-
-        characteristicList = characteristicList.stream()
-                .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
-                .collect(Collectors.toList());
-
         mCharacteristicHashMap = new HashMap<>();
 
-        mReadCharacteristicsOperationsQueue.addAll(characteristicList);
+        mReadCharacteristicsOperationsQueue.addAll(list);
 
         // initial call of readCharacteristic, further calls are done within onCharacteristicRead afterwards
         boolean success = mBluetoothGatt.readCharacteristic(mReadCharacteristicsOperationsQueue.poll());
