@@ -37,7 +37,6 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -506,10 +505,9 @@ public class DeviceScanActivity extends AppCompatActivity {
         return null;
     }
 
-    private void openDeviceConfigActivity(HashMap<UUID, String> characteristicHashMap) {
+    private void openBleTerminalActivity() {
 
         Intent intent = new Intent(DeviceScanActivity.this, BleTerminalActivity.class);
-        intent.putExtra(BleTerminalActivity.KEY_CHARACTERISTIC_HASH_MAP, characteristicHashMap);
         startActivityForResult(intent, ACTIVITY_RESULT_CONFIGURE_DEVICE);
     }
 
@@ -604,13 +602,8 @@ public class DeviceScanActivity extends AppCompatActivity {
         @Override
         public void onDeviceConnected() {
 
-            mDeviceService.readCharacteristics(mDeviceService.getReadableCharacteristicUuidList());
-        }
-
-        @Override
-        public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {
             mDialogConnectDevice.dismiss();
-            openDeviceConfigActivity((HashMap<UUID, String>) characteristicMap);
+            openBleTerminalActivity();
             mDeviceService.removeDeviceConnectionListener(this);
         }
 
