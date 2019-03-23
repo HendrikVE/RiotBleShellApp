@@ -3,7 +3,6 @@ package de.vanappsteer.riotbleshell.activities;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -38,11 +37,9 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
@@ -607,9 +604,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         @Override
         public void onDeviceConnected() {
 
-            List<BluetoothGattCharacteristic> characteristicList = mDeviceService.getReadableCharacteristicsList();
-
-            mDeviceService.readCharacteristics(characteristicList);
+            mDeviceService.readCharacteristics(mDeviceService.getReadableCharacteristicUuidList());
         }
 
         @Override

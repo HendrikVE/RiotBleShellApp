@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,8 +41,8 @@ public class BluetoothDeviceConnectionService extends Service {
     private boolean mDisconnectPending = false;
 
     private HashMap<UUID, String> mCharacteristicHashMap;
-    private final Queue<BluetoothGattCharacteristic> mReadCharacteristicsOperationsQueue = new LinkedList<>();
-    private final Queue<BluetoothGattCharacteristic> mWriteCharacteristicsOperationsQueue = new LinkedList<>();
+    private final Queue<UUID> mReadCharacteristicsOperationsQueue = new LinkedList<>();
+    private final Queue<UUID> mWriteCharacteristicsOperationsQueue = new LinkedList<>();
 
     private Set<DeviceConnectionListener> mDeviceConnectionListenerSet = new HashSet<>();
 
@@ -112,32 +113,29 @@ public class BluetoothDeviceConnectionService extends Service {
         return mBluetoothGatt == null || mBluetoothGattService == null;
     }
 
-    public List<BluetoothGattCharacteristic> getCharacteristicsList() {
+    public List<UUID> getReadableCharacteristicUuidList() {
 
-        return mBluetoothGattService.getCharacteristics();
-    }
-
-    public List<BluetoothGattCharacteristic> getReadableCharacteristicsList() {
-
-        List<BluetoothGattCharacteristic> list = getCharacteristicsList();
-        list = list.stream()
+        List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
+        List<UUID> uuidList = list.stream()
                 .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
+                .map(BluetoothGattCharacteristic::getUuid)
                 .collect(Collectors.toList());
 
-        return list;
+        return uuidList;
     }
 
-    public List<BluetoothGattCharacteristic> getWriteableCharacteristicsList() {
+    public List<UUID> getWriteableCharacteristicUuidList() {
 
-        List<BluetoothGattCharacteristic> list = getCharacteristicsList();
-        list = list.stream()
+        List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
+        List<UUID> uuidList = list.stream()
                 .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
+                .map(BluetoothGattCharacteristic::getUuid)
                 .collect(Collectors.toList());
 
-        return list;
+        return uuidList;
     }
 
-    public void readCharacteristics(List<BluetoothGattCharacteristic> list) {
+    public void readCharacteristics(List<UUID> list) {
 
         if (isDisconnected()) {
             mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
@@ -149,8 +147,11 @@ public class BluetoothDeviceConnectionService extends Service {
 
         mReadCharacteristicsOperationsQueue.addAll(list);
 
+        BluetoothGattCharacteristic characteristic
+                = mBluetoothGattService.getCharacteristic(mReadCharacteristicsOperationsQueue.poll());
+
         // initial call of readCharacteristic, further calls are done within onCharacteristicRead afterwards
-        boolean success = mBluetoothGatt.readCharacteristic(mReadCharacteristicsOperationsQueue.poll());
+        boolean success = mBluetoothGatt.readCharacteristic(characteristic);
         if (! success) {
             mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_READ));
         }
@@ -178,12 +179,16 @@ public class BluetoothDeviceConnectionService extends Service {
                 LoggingUtil.debug("entry.getValue() = " + entry.getValue());
                 LoggingUtil.debug("characteristic.getStringValue(0) = " +  characteristic.getStringValue(0));
 
-                mWriteCharacteristicsOperationsQueue.add(characteristic);
+                mWriteCharacteristicsOperationsQueue.add(characteristic.getUuid());
             }
 
             if (needInitialCall) {
+
+                BluetoothGattCharacteristic characteristic
+                        = mBluetoothGattService.getCharacteristic(mWriteCharacteristicsOperationsQueue.poll());
+
                 // initial call of writeCharacteristic, further calls are done within onCharacteristicWrite afterwards
-                boolean success = mBluetoothGatt.writeCharacteristic(mWriteCharacteristicsOperationsQueue.poll());
+                boolean success = mBluetoothGatt.writeCharacteristic(characteristic);
                 if (! success) {
                     mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_WRITE));
                 }
@@ -260,18 +265,22 @@ public class BluetoothDeviceConnectionService extends Service {
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristicRead, int status) {
 
             LoggingUtil.debug("onCharacteristicRead");
-            LoggingUtil.debug("uuid: " + characteristic.getUuid());
-            LoggingUtil.debug("value: " + characteristic.getStringValue(0));
+            LoggingUtil.debug("uuid: " + characteristicRead.getUuid());
+            LoggingUtil.debug("value: " + characteristicRead.getStringValue(0));
 
-            mCharacteristicHashMap.put(characteristic.getUuid(), characteristic.getStringValue(0));
+            mCharacteristicHashMap.put(characteristicRead.getUuid(), characteristicRead.getStringValue(0));
 
             synchronized (mReadCharacteristicsOperationsQueue) {
 
                 if (mReadCharacteristicsOperationsQueue.size() > 0) {
-                    boolean success = gatt.readCharacteristic(mReadCharacteristicsOperationsQueue.poll());
+
+                    BluetoothGattCharacteristic characteristic
+                            = mBluetoothGattService.getCharacteristic(mReadCharacteristicsOperationsQueue.poll());
+
+                    boolean success = gatt.readCharacteristic(characteristic);
                     if (! success) {
                         mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_READ));
                     }
@@ -287,18 +296,22 @@ public class BluetoothDeviceConnectionService extends Service {
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristicWrote, int status) {
 
             LoggingUtil.debug("onCharacteristicWrite");
-            LoggingUtil.debug("uuid: " + characteristic.getUuid());
-            LoggingUtil.debug("value: " + characteristic.getStringValue(0));
+            LoggingUtil.debug("uuid: " + characteristicWrote.getUuid());
+            LoggingUtil.debug("value: " + characteristicWrote.getStringValue(0));
 
             LoggingUtil.debug("pending queue size: " + mWriteCharacteristicsOperationsQueue.size());
 
             synchronized (mWriteCharacteristicsOperationsQueue) {
 
                 if (mWriteCharacteristicsOperationsQueue.size() > 0) {
-                    boolean success = gatt.writeCharacteristic(mWriteCharacteristicsOperationsQueue.poll());
+
+                    BluetoothGattCharacteristic characteristic
+                            = mBluetoothGattService.getCharacteristic(mWriteCharacteristicsOperationsQueue.poll());
+
+                    boolean success = gatt.writeCharacteristic(characteristic);
                     if (! success) {
                         mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_WRITE));
                     }
