@@ -117,6 +117,12 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public List<UUID> getReadableCharacteristicUuidList() {
 
+        if (isDisconnected()) {
+            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
+
+            return null;
+        }
+
         List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
         List<UUID> uuidList = list.stream()
                 .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
@@ -127,6 +133,12 @@ public class BluetoothDeviceConnectionService extends Service {
     }
 
     public List<UUID> getWriteableCharacteristicUuidList() {
+
+        if (isDisconnected()) {
+            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
+
+            return null;
+        }
 
         List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
         List<UUID> uuidList = list.stream()
