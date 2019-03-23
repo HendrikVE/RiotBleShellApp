@@ -1,0 +1,9 @@
+.idea/
+.gradle/
+build/
+*.pyc
+*.iml
+app/release/
+gradle.properties
+local.properties
+
