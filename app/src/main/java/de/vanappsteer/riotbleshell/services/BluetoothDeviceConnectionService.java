@@ -67,6 +67,8 @@ public class BluetoothDeviceConnectionService extends Service {
 
         public void onDeviceConnected() {}
         public void onDeviceDisconnected() {}
+        public void onCharacteristicRead(UUID uuid, String value) {}
+        public void onCharacteristicWrote(UUID uuid, String value) {}
         public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {}
         public void onAllCharacteristicsWrote() {}
         public void onDeviceConnectionError(int errorCode) {}
@@ -283,11 +285,17 @@ public class BluetoothDeviceConnectionService extends Service {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristicRead, int status) {
 
+            UUID uuid = characteristicRead.getUuid();
+            String value = characteristicRead.getStringValue(0);
+
             LoggingUtil.debug("onCharacteristicRead");
-            LoggingUtil.debug("uuid: " + characteristicRead.getUuid());
-            LoggingUtil.debug("value: " + characteristicRead.getStringValue(0));
+            LoggingUtil.debug("uuid: " + uuid);
+            LoggingUtil.debug("value: " + value);
+
+            LoggingUtil.debug("pending queue size: " + mReadCharacteristicsOperationsQueue.size());
 
             mCharacteristicHashMap.put(characteristicRead.getUuid(), characteristicRead.getStringValue(0));
+            mDeviceConnectionListenerSet.forEach(l -> l.onCharacteristicRead(uuid, value));
 
             synchronized (mReadCharacteristicsOperationsQueue) {
 
@@ -314,11 +322,16 @@ public class BluetoothDeviceConnectionService extends Service {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristicWrote, int status) {
 
+            UUID uuid = characteristicWrote.getUuid();
+            String value = characteristicWrote.getStringValue(0);
+
             LoggingUtil.debug("onCharacteristicWrite");
-            LoggingUtil.debug("uuid: " + characteristicWrote.getUuid());
-            LoggingUtil.debug("value: " + characteristicWrote.getStringValue(0));
+            LoggingUtil.debug("uuid: " + uuid);
+            LoggingUtil.debug("value: " + value);
 
             LoggingUtil.debug("pending queue size: " + mWriteCharacteristicsOperationsQueue.size());
+
+            mDeviceConnectionListenerSet.forEach(l -> l.onCharacteristicWrote(uuid, value));
 
             synchronized (mWriteCharacteristicsOperationsQueue) {
 

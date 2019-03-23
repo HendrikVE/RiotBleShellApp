@@ -116,15 +116,15 @@ public class BleTerminalActivity extends AppCompatActivity {
     private DeviceConnectionListener mDeviceConnectionListener = new DeviceConnectionListener() {
 
         @Override
-        public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {
+        public void onCharacteristicRead(UUID uuid, String value) {
 
-            String terminal_output = characteristicMap.get(BLE_CHARACTERISTIC_UUID_STDIN);
-            updateViews(terminal_output);
+            if (BLE_CHARACTERISTIC_UUID_STDIN.equals(uuid)) {
+                updateViews(value);
+            }
         }
 
         @Override
-        public void onAllCharacteristicsWrote() {
-
+        public void onCharacteristicWrote(UUID uuid, String value) {
             mDeviceService.readCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN);
         }
 
