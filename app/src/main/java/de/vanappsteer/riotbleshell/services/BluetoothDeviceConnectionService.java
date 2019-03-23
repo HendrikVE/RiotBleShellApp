@@ -135,6 +135,22 @@ public class BluetoothDeviceConnectionService extends Service {
         return uuidList;
     }
 
+    public void readCharacteristic(UUID uuid) {
+
+        List<UUID> list = new ArrayList<>();
+        list.add(uuid);
+
+        readCharacteristics(list);
+    }
+
+    public void writeCharacteristic(UUID uuid, String value) {
+
+        Map<UUID, String> map = new HashMap<>();
+        map.put(uuid, value);
+
+        writeCharacteristics(map);
+    }
+
     public void readCharacteristics(List<UUID> list) {
 
         if (isDisconnected()) {

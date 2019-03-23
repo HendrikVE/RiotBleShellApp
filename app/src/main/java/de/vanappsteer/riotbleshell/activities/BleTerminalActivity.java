@@ -125,7 +125,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         @Override
         public void onAllCharacteristicsWrote() {
 
-            mDeviceService.readCharacteristics(mDeviceService.getReadableCharacteristicUuidList());
+            mDeviceService.readCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN);
         }
 
         @Override
