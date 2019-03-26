@@ -1,34 +1,35 @@
 package de.vanappsteer.riotbleshell.services;
 
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.scan.ScanResult;
+import com.polidea.rxandroidble2.scan.ScanSettings;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
+import io.reactivex.disposables.Disposable;
 
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_GENERIC;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_READ;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_WRITE;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_DISCONNECTED;
 
 public class BluetoothDeviceConnectionService extends Service {
 
@@ -36,42 +37,28 @@ public class BluetoothDeviceConnectionService extends Service {
 
     private final IBinder mBinder = new LocalBinder();
 
-    private BluetoothGatt mBluetoothGatt = null;
-    private BluetoothGattService mBluetoothGattService = null;
     private boolean mDisconnectPending = false;
 
     private HashMap<UUID, String> mCharacteristicHashMap;
-    private final Queue<UUID> mReadCharacteristicsOperationsQueue = new LinkedList<>();
-    private final Queue<UUID> mWriteCharacteristicsOperationsQueue = new LinkedList<>();
+
+    private List<ScanListener> mScanListenerList = new ArrayList<>();
 
     private Set<DeviceConnectionListener> mDeviceConnectionListenerSet = new HashSet<>();
 
-    public BluetoothDeviceConnectionService() {
+    private RxBleClient mRxBleClient;
+    private RxBleConnection mRxBleConnection;
 
-    }
+    private Disposable mScanSubscription;
+    private Disposable mConnectionSubscription;
 
-    public class LocalBinder extends Binder {
+    public BluetoothDeviceConnectionService() { }
 
-        public BluetoothDeviceConnectionService getService() {
-            return BluetoothDeviceConnectionService.this;
-        }
-    }
+    @Override
+    public void onCreate() {
 
-    public static class DeviceConnectionListener {
+        super.onCreate();
 
-        protected static final int DEVICE_DISCONNECTED = 0;
-        protected static final int DEVICE_CONNECTION_ERROR_GENERIC = 1;
-        protected static final int DEVICE_CONNECTION_ERROR_UNSUPPORTED = 2;
-        protected static final int DEVICE_CONNECTION_ERROR_READ = 3;
-        protected static final int DEVICE_CONNECTION_ERROR_WRITE = 4;
-
-        public void onDeviceConnected() {}
-        public void onDeviceDisconnected() {}
-        public void onCharacteristicRead(UUID uuid, String value) {}
-        public void onCharacteristicWrote(UUID uuid, String value) {}
-        public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {}
-        public void onAllCharacteristicsWrote() {}
-        public void onDeviceConnectionError(int errorCode) {}
+        mRxBleClient = RxBleClient.create(this);
     }
 
     @Override
@@ -81,159 +68,81 @@ public class BluetoothDeviceConnectionService extends Service {
 
     @Override
     public void onDestroy() {
+
         disconnectDevice();
     }
 
-    public void connectDevice(BluetoothDevice device) {
+    public void startDeviceScan() {
+        mScanSubscription = mRxBleClient.scanBleDevices(
+                new ScanSettings.Builder().build()
+        ).subscribe(
+                scanResult -> {
+                    mScanListenerList.forEach(l -> l.onScanResult(scanResult));
+                },
+                throwable -> {
+                    // Handle an error here.
+                }
+        );
+    }
 
-        LoggingUtil.debug("connectDevice()");
+    public void stopDeviceScan() {
+        mScanSubscription.dispose();
+    }
 
-        mBluetoothGatt = device.connectGatt(BluetoothDeviceConnectionService.this, false, mGattCharacteristicCallback);
+    public void connectDevice(RxBleDevice device) {
+
+        mConnectionSubscription = device.establishConnection(false)
+                .subscribe(
+                        rxBleConnection -> {
+                            mRxBleConnection = rxBleConnection;
+                        },
+                        throwable -> {
+                            // TODO
+                        }
+                );
     }
 
     public void disconnectDevice() {
 
-        if (mBluetoothGatt != null) {
-
-            synchronized (mReadCharacteristicsOperationsQueue) {
-                synchronized (mWriteCharacteristicsOperationsQueue) {
-                    int operationsPending = mReadCharacteristicsOperationsQueue.size() + mWriteCharacteristicsOperationsQueue.size();
-
-                    if (operationsPending == 0) {
-                        mBluetoothGatt.disconnect();
-                        mDisconnectPending = false;
-                    }
-                    else {
-                        mDisconnectPending = true;
-                    }
-                }
-            }
-        }
+        mConnectionSubscription.dispose();
     }
 
     private boolean isDisconnected() {
-        return mBluetoothGatt == null || mBluetoothGattService == null;
-    }
 
-    public List<UUID> getReadableCharacteristicUuidList() {
-
-        if (isDisconnected()) {
-            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
-
-            return null;
-        }
-
-        List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
-        List<UUID> uuidList = list.stream()
-                .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
-                .map(BluetoothGattCharacteristic::getUuid)
-                .collect(Collectors.toList());
-
-        return uuidList;
-    }
-
-    public List<UUID> getWriteableCharacteristicUuidList() {
-
-        if (isDisconnected()) {
-            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
-
-            return null;
-        }
-
-        List<BluetoothGattCharacteristic> list = mBluetoothGattService.getCharacteristics();
-        List<UUID> uuidList = list.stream()
-                .filter(c -> (c.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
-                .map(BluetoothGattCharacteristic::getUuid)
-                .collect(Collectors.toList());
-
-        return uuidList;
+        return mConnectionSubscription.isDisposed();
     }
 
     public void readCharacteristic(UUID uuid) {
 
-        List<UUID> list = new ArrayList<>();
-        list.add(uuid);
-
-        readCharacteristics(list);
+        mRxBleConnection.readCharacteristic(uuid);
     }
 
-    public void writeCharacteristic(UUID uuid, String value) {
+    public void writeCharacteristic(UUID uuid, byte[] value) {
 
-        Map<UUID, String> map = new HashMap<>();
-        map.put(uuid, value);
-
-        writeCharacteristics(map);
-    }
-
-    public void readCharacteristics(List<UUID> list) {
-
-        if (isDisconnected()) {
-            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
-
-            return;
-        }
-
-        mCharacteristicHashMap = new HashMap<>();
-
-        mReadCharacteristicsOperationsQueue.addAll(list);
-
-        BluetoothGattCharacteristic characteristic
-                = mBluetoothGattService.getCharacteristic(mReadCharacteristicsOperationsQueue.poll());
-
-        // initial call of readCharacteristic, further calls are done within onCharacteristicRead afterwards
-        boolean success = mBluetoothGatt.readCharacteristic(characteristic);
-        if (! success) {
-            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_READ));
-        }
-    }
-
-    public void writeCharacteristics(Map<UUID, String> characteristicMap) {
-
-        if (isDisconnected()) {
-            mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_DISCONNECTED));
-
-            return;
-        }
-
-        synchronized (mWriteCharacteristicsOperationsQueue) {
-
-            boolean needInitialCall = mWriteCharacteristicsOperationsQueue.size() == 0;
-
-            BluetoothGattService gattService = mBluetoothGatt.getService(BLE_SERVICE_UUID);
-
-            for (Map.Entry<UUID, String> entry : characteristicMap.entrySet()) {
-
-                BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(entry.getKey());
-                characteristic.setValue(entry.getValue());
-
-                LoggingUtil.debug("entry.getValue() = " + entry.getValue());
-                LoggingUtil.debug("characteristic.getStringValue(0) = " +  characteristic.getStringValue(0));
-
-                mWriteCharacteristicsOperationsQueue.add(characteristic.getUuid());
-            }
-
-            if (needInitialCall) {
-
-                BluetoothGattCharacteristic characteristic
-                        = mBluetoothGattService.getCharacteristic(mWriteCharacteristicsOperationsQueue.poll());
-
-                // initial call of writeCharacteristic, further calls are done within onCharacteristicWrite afterwards
-                boolean success = mBluetoothGatt.writeCharacteristic(characteristic);
-                if (! success) {
-                    mDeviceConnectionListenerSet.forEach(l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_WRITE));
-                }
-            }
-        }
+        mRxBleConnection.writeCharacteristic(uuid, value);
     }
 
     public void addDeviceConnectionListener(DeviceConnectionListener listener) {
+
         mDeviceConnectionListenerSet.add(listener);
     }
 
     public void removeDeviceConnectionListener(DeviceConnectionListener listener) {
+
         mDeviceConnectionListenerSet.remove(listener);
     }
 
+    public void addScanListener(ScanListener listener) {
+
+        mScanListenerList.add(listener);
+    }
+
+    public void removeScanListener(ScanListener listener) {
+
+        mScanListenerList.remove(listener);
+    }
+
+    /*
     private BluetoothGattCallback mGattCharacteristicCallback = new BluetoothGattCallback() {
 
         @Override
@@ -367,4 +276,35 @@ public class BluetoothDeviceConnectionService extends Service {
             }
         }
     };
+    */
+
+    public class LocalBinder extends Binder {
+
+        public BluetoothDeviceConnectionService getService() {
+            return BluetoothDeviceConnectionService.this;
+        }
+    }
+
+    public static class DeviceConnectionListener {
+
+        protected static final int DEVICE_DISCONNECTED = 0;
+        protected static final int DEVICE_CONNECTION_ERROR_GENERIC = 1;
+        protected static final int DEVICE_CONNECTION_ERROR_UNSUPPORTED = 2;
+        protected static final int DEVICE_CONNECTION_ERROR_READ = 3;
+        protected static final int DEVICE_CONNECTION_ERROR_WRITE = 4;
+
+        public void onDeviceConnected() {}
+        public void onDeviceDisconnected() {}
+
+        public void onCharacteristicRead(UUID uuid, String value) {}
+        public void onCharacteristicWrote(UUID uuid, String value) {}
+        public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {}
+        public void onAllCharacteristicsWrote() {}
+
+        public void onDeviceConnectionError(int errorCode) {}
+    }
+
+    public static abstract class ScanListener {
+        public abstract void onScanResult(ScanResult scanResult);
+    }
 }

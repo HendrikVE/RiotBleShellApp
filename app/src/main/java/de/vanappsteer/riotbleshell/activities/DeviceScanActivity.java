@@ -35,15 +35,17 @@ import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.HashMap;
+import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.scan.ScanResult;
+
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
+import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
 public class DeviceScanActivity extends AppCompatActivity {
@@ -74,7 +76,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     private BluetoothDeviceConnectionService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
-    private Set<BluetoothDevice> bleDeviceSet = new HashSet<>();
+    private Set<RxBleDevice> bleDeviceSet = new HashSet<>();
 
     private DeviceListAdapter mAdapter;
     private boolean mScanSwitchEnabled = true;
@@ -313,7 +315,8 @@ public class DeviceScanActivity extends AppCompatActivity {
         mTextViewEnableBluetooth.setVisibility(View.GONE);
 
         mIsScanning = true;
-        mBluetoothAdapter.startLeScan(mLeScanCallback);
+        mDeviceService.addScanListener(mScanListener);
+        mDeviceService.startDeviceScan();
     }
 
     private void stopScan() {
@@ -330,7 +333,8 @@ public class DeviceScanActivity extends AppCompatActivity {
         if (mBluetoothAdapter != null) {
             mIsScanning = false;
             if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mDeviceService.removeScanListener(mScanListener);
+                mDeviceService.stopDeviceScan();
             }
         }
 
@@ -358,7 +362,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         mAdapter = new DeviceListAdapter();
         mAdapter.setOnDeviceSelectionListener(new DeviceListAdapter.OnDeviceSelectionListener() {
             @Override
-            public void onDeviceSelected(BluetoothDevice device) {
+            public void onDeviceSelected(RxBleDevice device) {
 
                 if (mDeviceServiceBound) {
                     mDeviceService.addDeviceConnectionListener(mDeviceConnectionListener);
@@ -457,47 +461,10 @@ public class DeviceScanActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+    private RxBleDevice getDeviceByBleAddress(Set<RxBleDevice> deviceSet, String address) {
 
-        @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-
-            runOnUiThread(() -> {
-
-                if (! mIsScanning) {
-                    return;
-                }
-
-                boolean added = false;
-
-                // update device in set if a name was found after address was already discovered
-                BluetoothDevice deviceFound = getDeviceByBleAddress(bleDeviceSet, device.getAddress());
-
-                if (device.getName() == null) {
-                    // ignore devices without a name
-                    return;
-                }
-
-                if (deviceFound != null && deviceFound.getName() == null && device.getName() != null) {
-                    bleDeviceSet.remove(deviceFound);
-                    added = bleDeviceSet.add(device);
-                }
-                else if(deviceFound == null) {
-                    added = bleDeviceSet.add(device);
-                }
-
-                if (added) {
-                    mAdapter.setDevices(bleDeviceSet);
-                    mAdapter.notifyDataSetChanged();
-                }
-            });
-        }
-    };
-
-    private BluetoothDevice getDeviceByBleAddress(Set<BluetoothDevice> deviceSet, String address) {
-
-        for (BluetoothDevice device : deviceSet) {
-            if (device.getAddress().equals(address)) {
+        for (RxBleDevice device : deviceSet) {
+            if (device.getMacAddress().equals(address)) {
                 return device;
             }
         }
@@ -594,6 +561,42 @@ public class DeviceScanActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mDeviceServiceBound = false;
+        }
+    };
+
+    private ScanListener mScanListener = new ScanListener() {
+
+        @Override
+        public void onScanResult(ScanResult scanResult) {
+
+            RxBleDevice device = scanResult.getBleDevice();
+
+            if (! mIsScanning) {
+                return;
+            }
+
+            boolean added = false;
+
+            // update device in set if a name was found after address was already discovered
+            RxBleDevice deviceFound = getDeviceByBleAddress(bleDeviceSet, device.getMacAddress());
+
+            if (device.getName() == null) {
+                // ignore devices without a name
+                return;
+            }
+
+            if (deviceFound != null && deviceFound.getName() == null && device.getName() != null) {
+                bleDeviceSet.remove(deviceFound);
+                added = bleDeviceSet.add(device);
+            }
+            else if(deviceFound == null) {
+                added = bleDeviceSet.add(device);
+            }
+
+            if (added) {
+                mAdapter.setDevices(bleDeviceSet);
+                mAdapter.notifyDataSetChanged();
+            }
         }
     };
 

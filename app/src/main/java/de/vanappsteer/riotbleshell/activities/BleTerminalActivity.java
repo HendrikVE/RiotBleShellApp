@@ -89,7 +89,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         Map<UUID, String> characteristicMap = new HashMap<>();
         characteristicMap.put(BLE_CHARACTERISTIC_UUID_STDOUT, cmd);
 
-        mDeviceService.writeCharacteristics(characteristicMap);
+        // TODO: mDeviceService.writeCharacteristics(characteristicMap);
     }
 
     private void updateViews(String additionalText) {
