@@ -91,6 +91,11 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public void connectDevice(RxBleDevice device) {
 
+        if (mConnectionSubscription != null && !mConnectionSubscription.isDisposed()) {
+            //allow only one connection at the same time
+            mConnectionSubscription.dispose();
+        }
+
         mConnectionSubscription = device.establishConnection(false)
                 .subscribe(
                         rxBleConnection -> {
