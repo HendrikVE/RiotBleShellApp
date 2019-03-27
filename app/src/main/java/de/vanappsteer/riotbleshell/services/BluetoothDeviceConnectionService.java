@@ -1,7 +1,12 @@
 package de.vanappsteer.riotbleshell.services;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.IBinder;
 
@@ -20,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 
 public class BluetoothDeviceConnectionService extends Service {
@@ -31,6 +35,11 @@ public class BluetoothDeviceConnectionService extends Service {
     public final static int BLUETOOTH_NOT_ENABLED = 3;
     public final static int LOCATION_SERVICES_NOT_ENABLED = 4;
 
+    public final static int STATE_OFF = 0;
+    public final static int STATE_TURNING_ON = 1;
+    public final static int STATE_ON = 2;
+    public final static int STATE_TURNING_OFF = 3;
+
     private final UUID BLE_SERVICE_UUID = UUID.fromString("e6d54866-0292-4779-b8f8-c52bbec91e71");
 
     private final IBinder mBinder = new LocalBinder();
@@ -40,9 +49,13 @@ public class BluetoothDeviceConnectionService extends Service {
     private HashMap<UUID, String> mCharacteristicHashMap;
 
     private List<ScanListener> mScanListenerList = new ArrayList<>();
-    private List<BluetoothStateListener> mBluetoothStateListenerList = new ArrayList<>();
+    private List<BluetoothPreconditionStateListener> mBluetoothPreconditionStateListenerList = new ArrayList<>();
+    private List<BluetoothAdapterStateListener> mBluetoothAdapterStateListenerList = new ArrayList<>();
 
     private Set<DeviceConnectionListener> mDeviceConnectionListenerSet = new HashSet<>();
+
+    private BluetoothManager mBluetoothManager;
+    private BluetoothAdapter mBluetoothAdapter;
 
     private RxBleClient mRxBleClient;
     private RxBleConnection mRxBleConnection;
@@ -60,36 +73,45 @@ public class BluetoothDeviceConnectionService extends Service {
 
         mRxBleClient = RxBleClient.create(this);
 
+        mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+
+        if (mBluetoothManager != null) {
+            mBluetoothAdapter = mBluetoothManager.getAdapter();
+        }
+
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mBroadcastReceiver, filter);
+
         mFlowDisposable = mRxBleClient.observeStateChanges()
             .subscribe(
                 state -> {
                     switch (state) {
                         case READY:
-                            mBluetoothStateListenerList.forEach(
+                            mBluetoothPreconditionStateListenerList.forEach(
                                 l -> l.onStateChange(READY)
                             );
                             break;
 
                         case BLUETOOTH_NOT_AVAILABLE:
-                            mBluetoothStateListenerList.forEach(
+                            mBluetoothPreconditionStateListenerList.forEach(
                                     l -> l.onStateChange(BLUETOOTH_NOT_AVAILABLE)
                             );
                             break;
 
                         case LOCATION_PERMISSION_NOT_GRANTED:
-                            mBluetoothStateListenerList.forEach(
+                            mBluetoothPreconditionStateListenerList.forEach(
                                     l -> l.onStateChange(LOCATION_PERMISSION_NOT_GRANTED)
                             );
                             break;
 
                         case BLUETOOTH_NOT_ENABLED:
-                            mBluetoothStateListenerList.forEach(
+                            mBluetoothPreconditionStateListenerList.forEach(
                                     l -> l.onStateChange(BLUETOOTH_NOT_ENABLED)
                             );
                             break;
 
                         case LOCATION_SERVICES_NOT_ENABLED:
-                            mBluetoothStateListenerList.forEach(
+                            mBluetoothPreconditionStateListenerList.forEach(
                                     l -> l.onStateChange(LOCATION_SERVICES_NOT_ENABLED)
                             );
                             break;
@@ -111,6 +133,8 @@ public class BluetoothDeviceConnectionService extends Service {
 
     @Override
     public void onDestroy() {
+
+        unregisterReceiver(mBroadcastReceiver);
 
         disconnectDevice();
     }
@@ -148,6 +172,61 @@ public class BluetoothDeviceConnectionService extends Service {
                             // TODO
                         }
                 );
+    }
+
+    public int getBluetoothState() {
+
+        RxBleClient.State state = mRxBleClient.getState();
+
+        switch (state) {
+
+            case READY:
+                return READY;
+
+            case BLUETOOTH_NOT_AVAILABLE:
+                return BLUETOOTH_NOT_AVAILABLE;
+
+            case LOCATION_PERMISSION_NOT_GRANTED:
+                return LOCATION_PERMISSION_NOT_GRANTED;
+
+            case BLUETOOTH_NOT_ENABLED:
+                return BLUETOOTH_NOT_ENABLED;
+
+            case LOCATION_SERVICES_NOT_ENABLED:
+                return LOCATION_SERVICES_NOT_ENABLED;
+
+            default:
+                LoggingUtil.warning("unhandled state: " + state);
+                return -1;
+        }
+    }
+
+    public int getBluetoothAdapterState() {
+
+        if (mBluetoothAdapter == null) {
+            return BluetoothAdapter.STATE_OFF;
+        }
+
+        int state = mBluetoothAdapter.getState();
+
+        switch (state) {
+
+            case BluetoothAdapter.STATE_OFF:
+                return STATE_OFF;
+
+            case BluetoothAdapter.STATE_TURNING_ON:
+                return STATE_TURNING_ON;
+
+            case BluetoothAdapter.STATE_ON:
+                return STATE_ON;
+
+            case BluetoothAdapter.STATE_TURNING_OFF:
+                return STATE_TURNING_OFF;
+
+            default:
+                LoggingUtil.warning("unhandled state: " + state);
+                return STATE_OFF;
+        }
     }
 
     public void disconnectDevice() {
@@ -190,14 +269,24 @@ public class BluetoothDeviceConnectionService extends Service {
         mScanListenerList.remove(listener);
     }
 
-    public void addBluetoothStateListener(BluetoothStateListener listener) {
+    public void addBluetoothStateListener(BluetoothPreconditionStateListener listener) {
 
-        mBluetoothStateListenerList.add(listener);
+        mBluetoothPreconditionStateListenerList.add(listener);
     }
 
-    public void removeBluetoothStateListener(BluetoothStateListener listener) {
+    public void removeBluetoothStateListener(BluetoothPreconditionStateListener listener) {
 
-        mBluetoothStateListenerList.remove(listener);
+        mBluetoothPreconditionStateListenerList.remove(listener);
+    }
+
+    public void addBluetoothAdapterStateListener(BluetoothAdapterStateListener listener) {
+
+        mBluetoothAdapterStateListenerList.add(listener);
+    }
+
+    public void removeBluetoothAdapterStateListener(BluetoothAdapterStateListener listener) {
+
+        mBluetoothAdapterStateListenerList.remove(listener);
     }
 
     /*
@@ -336,6 +425,49 @@ public class BluetoothDeviceConnectionService extends Service {
     };
     */
 
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                switch (state) {
+
+                    case BluetoothAdapter.STATE_OFF:
+                        mBluetoothAdapterStateListenerList.forEach(
+                                l -> l.onStateChange(STATE_OFF)
+                        );
+                        break;
+
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        mBluetoothAdapterStateListenerList.forEach(
+                                l -> l.onStateChange(STATE_TURNING_OFF)
+                        );
+                        break;
+
+                    case BluetoothAdapter.STATE_ON:
+                        mBluetoothAdapterStateListenerList.forEach(
+                                l -> l.onStateChange(STATE_ON)
+                        );
+                        break;
+
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        mBluetoothAdapterStateListenerList.forEach(
+                                l -> l.onStateChange(STATE_TURNING_ON)
+                        );
+                        break;
+
+                    default:
+                        LoggingUtil.warning("unhandled state: " + state);
+                }
+            }
+        }
+    };
+
     public class LocalBinder extends Binder {
 
         public BluetoothDeviceConnectionService getService() {
@@ -366,7 +498,11 @@ public class BluetoothDeviceConnectionService extends Service {
         public abstract void onScanResult(ScanResult scanResult);
     }
 
-    public static abstract class BluetoothStateListener {
+    public static abstract class BluetoothPreconditionStateListener {
+        public abstract void onStateChange(int state);
+    }
+
+    public static abstract class BluetoothAdapterStateListener {
         public abstract void onStateChange(int state);
     }
 }

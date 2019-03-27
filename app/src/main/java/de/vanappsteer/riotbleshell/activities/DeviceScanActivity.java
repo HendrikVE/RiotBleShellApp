@@ -2,8 +2,6 @@ package de.vanappsteer.riotbleshell.activities;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -42,16 +40,19 @@ import java.util.Set;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
+import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothPreconditionStateListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothStateListener;
+import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothAdapterStateListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.READY;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_AVAILABLE;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_PERMISSION_NOT_GRANTED;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_ENABLED;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_PERMISSION_NOT_GRANTED;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_SERVICES_NOT_ENABLED;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.READY;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_ON;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_OFF;
 
 public class DeviceScanActivity extends AppCompatActivity {
 
@@ -75,9 +76,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private final String KEY_SP_ASKED_FOR_LOCATION = "KEY_SP_ASKED_FOR_LOCATION";
 
-    private BluetoothManager mBluetoothManager;
-    private BluetoothAdapter mBluetoothAdapter;
-
     private BluetoothDeviceConnectionService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
@@ -96,38 +94,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private SharedPreferences mSP;
 
-    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch (state) {
-
-                    case BluetoothAdapter.STATE_OFF:
-                        stopScan();
-                        break;
-
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        // do nothing
-                        break;
-
-                    case BluetoothAdapter.STATE_ON:
-                        // do nothing
-                        break;
-
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        // do nothing
-                        break;
-
-                    default:
-                        LoggingUtil.warning("unhandled state: " + state);
-                }
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -139,11 +105,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         initViews();
 
-        mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mSP = PreferenceManager.getDefaultSharedPreferences(this);
-
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mBroadcastReceiver, filter);
     }
 
     @Override
@@ -186,12 +148,11 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         if (mDeviceServiceBound) {
             mDeviceService.removeDeviceConnectionListener(mDeviceConnectionListener);
+            mDeviceService.removeBluetoothAdapterStateListener(mBluetoothAdapterStateListener);
             mDeviceService.disconnectDevice();
             unbindService(mConnection);
             mDeviceServiceBound = false;
         }
-
-        unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
@@ -315,8 +276,9 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         mTextViewEnableBluetooth.setVisibility(View.GONE);
 
-        mIsScanning = true;
         mDeviceService.addScanListener(mScanListener);
+
+        mIsScanning = true;
         mDeviceService.startDeviceScan();
     }
 
@@ -330,13 +292,13 @@ public class DeviceScanActivity extends AppCompatActivity {
             mScanSwitchEnabled = true;
         }
 
-        // mBluetoothAdapter is null if only checkPermissions() was called, but not checkBluetooth()
-        if (mBluetoothAdapter != null) {
+        int adapterState = mDeviceService.getBluetoothAdapterState();
+
+        if (adapterState == STATE_ON) {
+            mDeviceService.removeScanListener(mScanListener);
+
             mIsScanning = false;
-            if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                mDeviceService.removeScanListener(mScanListener);
-                mDeviceService.stopDeviceScan();
-            }
+            mDeviceService.stopDeviceScan();
         }
 
         bleDeviceSet.clear();
@@ -394,11 +356,9 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void checkBluetooth() {
 
-        if (mBluetoothManager != null) {
-            mBluetoothAdapter = mBluetoothManager.getAdapter();
-        }
+        int adapterState = mDeviceService.getBluetoothAdapterState();
 
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+        if (adapterState != STATE_ON) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, ACTIVITY_RESULT_ENABLE_BLUETOOTH);
         }
@@ -558,7 +518,7 @@ public class DeviceScanActivity extends AppCompatActivity {
             mDeviceService = binder.getService();
             mDeviceServiceBound = true;
 
-            mDeviceService.addBluetoothStateListener(mBluetoothStateListener);
+            mDeviceService.addBluetoothAdapterStateListener(mBluetoothAdapterStateListener);
         }
 
         @Override
@@ -603,24 +563,17 @@ public class DeviceScanActivity extends AppCompatActivity {
         }
     };
 
-    private BluetoothStateListener mBluetoothStateListener = new BluetoothStateListener() {
-
+    private BluetoothAdapterStateListener mBluetoothAdapterStateListener = new BluetoothAdapterStateListener() {
         @Override
         public void onStateChange(int state) {
+
             switch (state) {
-                case READY:
+                case STATE_ON:
+                    startScan();
                     break;
 
-                case BLUETOOTH_NOT_AVAILABLE:
-                    break;
-
-                case LOCATION_PERMISSION_NOT_GRANTED:
-                    break;
-
-                case BLUETOOTH_NOT_ENABLED:
-                    break;
-
-                case LOCATION_SERVICES_NOT_ENABLED:
+                case STATE_OFF:
+                    stopScan();
                     break;
 
                 default:
