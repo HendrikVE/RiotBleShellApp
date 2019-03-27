@@ -2,7 +2,6 @@ package de.vanappsteer.riotbleshell.activities;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -31,7 +30,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -46,7 +44,14 @@ import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
+import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothStateListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
+
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.READY;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_AVAILABLE;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_PERMISSION_NOT_GRANTED;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_ENABLED;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_SERVICES_NOT_ENABLED;
 
 public class DeviceScanActivity extends AppCompatActivity {
 
@@ -261,21 +266,17 @@ public class DeviceScanActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.scan_menu, menu);
 
         mScanSwitch = menu.findItem(R.id.menuItemBluetoothSwitch).getActionView().findViewById(R.id.bluetoothScanSwitch);
-        mScanSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mScanSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
 
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            if (! mScanSwitchEnabled) {
+                return;
+            }
 
-                if (! mScanSwitchEnabled) {
-                    return;
-                }
-
-                if (isChecked) {
-                    checkPermissions();
-                }
-                else {
-                    stopScan();
-                }
+            if (isChecked) {
+                checkPermissions();
+            }
+            else {
+                stopScan();
             }
         });
 
@@ -556,6 +557,8 @@ public class DeviceScanActivity extends AppCompatActivity {
             BluetoothDeviceConnectionService.LocalBinder binder = (BluetoothDeviceConnectionService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceServiceBound = true;
+
+            mDeviceService.addBluetoothStateListener(mBluetoothStateListener);
         }
 
         @Override
@@ -596,6 +599,32 @@ public class DeviceScanActivity extends AppCompatActivity {
             if (added) {
                 mAdapter.setDevices(bleDeviceSet);
                 mAdapter.notifyDataSetChanged();
+            }
+        }
+    };
+
+    private BluetoothStateListener mBluetoothStateListener = new BluetoothStateListener() {
+
+        @Override
+        public void onStateChange(int state) {
+            switch (state) {
+                case READY:
+                    break;
+
+                case BLUETOOTH_NOT_AVAILABLE:
+                    break;
+
+                case LOCATION_PERMISSION_NOT_GRANTED:
+                    break;
+
+                case BLUETOOTH_NOT_ENABLED:
+                    break;
+
+                case LOCATION_SERVICES_NOT_ENABLED:
+                    break;
+
+                default:
+                    LoggingUtil.warning("unhandled state: " + state);
             }
         }
     };

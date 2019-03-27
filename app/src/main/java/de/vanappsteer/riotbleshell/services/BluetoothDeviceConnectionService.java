@@ -1,10 +1,6 @@
 package de.vanappsteer.riotbleshell.services;
 
 import android.app.Service;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -24,14 +20,16 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_GENERIC;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_READ;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener.DEVICE_CONNECTION_ERROR_WRITE;
-
 public class BluetoothDeviceConnectionService extends Service {
+
+    public final static int READY = 0;
+    public final static int BLUETOOTH_NOT_AVAILABLE = 1;
+    public final static int LOCATION_PERMISSION_NOT_GRANTED = 2;
+    public final static int BLUETOOTH_NOT_ENABLED = 3;
+    public final static int LOCATION_SERVICES_NOT_ENABLED = 4;
 
     private final UUID BLE_SERVICE_UUID = UUID.fromString("e6d54866-0292-4779-b8f8-c52bbec91e71");
 
@@ -42,12 +40,14 @@ public class BluetoothDeviceConnectionService extends Service {
     private HashMap<UUID, String> mCharacteristicHashMap;
 
     private List<ScanListener> mScanListenerList = new ArrayList<>();
+    private List<BluetoothStateListener> mBluetoothStateListenerList = new ArrayList<>();
 
     private Set<DeviceConnectionListener> mDeviceConnectionListenerSet = new HashSet<>();
 
     private RxBleClient mRxBleClient;
     private RxBleConnection mRxBleConnection;
 
+    private Disposable mFlowDisposable;
     private Disposable mScanSubscription;
     private Disposable mConnectionSubscription;
 
@@ -59,6 +59,49 @@ public class BluetoothDeviceConnectionService extends Service {
         super.onCreate();
 
         mRxBleClient = RxBleClient.create(this);
+
+        mFlowDisposable = mRxBleClient.observeStateChanges()
+            .subscribe(
+                state -> {
+                    switch (state) {
+                        case READY:
+                            mBluetoothStateListenerList.forEach(
+                                l -> l.onStateChange(READY)
+                            );
+                            break;
+
+                        case BLUETOOTH_NOT_AVAILABLE:
+                            mBluetoothStateListenerList.forEach(
+                                    l -> l.onStateChange(BLUETOOTH_NOT_AVAILABLE)
+                            );
+                            break;
+
+                        case LOCATION_PERMISSION_NOT_GRANTED:
+                            mBluetoothStateListenerList.forEach(
+                                    l -> l.onStateChange(LOCATION_PERMISSION_NOT_GRANTED)
+                            );
+                            break;
+
+                        case BLUETOOTH_NOT_ENABLED:
+                            mBluetoothStateListenerList.forEach(
+                                    l -> l.onStateChange(BLUETOOTH_NOT_ENABLED)
+                            );
+                            break;
+
+                        case LOCATION_SERVICES_NOT_ENABLED:
+                            mBluetoothStateListenerList.forEach(
+                                    l -> l.onStateChange(LOCATION_SERVICES_NOT_ENABLED)
+                            );
+                            break;
+
+                        default:
+                            LoggingUtil.warning("unhandled state: " + state);
+                    }
+                },
+                throwable -> {
+                    LoggingUtil.error(throwable.getMessage());
+                }
+            );
     }
 
     @Override
@@ -145,6 +188,16 @@ public class BluetoothDeviceConnectionService extends Service {
     public void removeScanListener(ScanListener listener) {
 
         mScanListenerList.remove(listener);
+    }
+
+    public void addBluetoothStateListener(BluetoothStateListener listener) {
+
+        mBluetoothStateListenerList.add(listener);
+    }
+
+    public void removeBluetoothStateListener(BluetoothStateListener listener) {
+
+        mBluetoothStateListenerList.remove(listener);
     }
 
     /*
@@ -311,5 +364,9 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public static abstract class ScanListener {
         public abstract void onScanResult(ScanResult scanResult);
+    }
+
+    public static abstract class BluetoothStateListener {
+        public abstract void onStateChange(int state);
     }
 }
