@@ -231,7 +231,9 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public void disconnectDevice() {
 
-        mConnectionSubscription.dispose();
+        if (mConnectionSubscription != null) {
+            mConnectionSubscription.dispose();
+        }
     }
 
     private boolean isDisconnected() {
