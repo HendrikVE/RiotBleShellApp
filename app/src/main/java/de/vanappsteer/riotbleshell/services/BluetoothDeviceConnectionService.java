@@ -147,14 +147,14 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public void startDeviceScan() {
         mScanSubscription = mRxBleClient.scanBleDevices(
-                new ScanSettings.Builder().build()
+            new ScanSettings.Builder().build()
         ).subscribe(
-                scanResult -> {
-                    mScanListenerList.forEach(l -> l.onScanResult(scanResult));
-                },
-                throwable -> {
-                    // Handle an error here.
-                }
+            scanResult -> {
+                mScanListenerList.forEach(l -> l.onScanResult(scanResult));
+            },
+            throwable -> {
+                // Handle an error here.
+            }
         );
     }
 
@@ -170,20 +170,20 @@ public class BluetoothDeviceConnectionService extends Service {
         }
 
         mConnectionSubscription = device.establishConnection(false)
-                .subscribe(
-                        rxBleConnection -> {
-                            mRxBleConnection = rxBleConnection;
-                            mDeviceConnectionListenerSet.forEach(
-                                    l -> l.onDeviceConnected()
-                            );
-                        },
-                        throwable -> {
-                            LoggingUtil.error(throwable.getMessage());
-                            mDeviceConnectionListenerSet.forEach(
-                                    l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_GENERIC)
-                            );
-                        }
-                );
+            .subscribe(
+                rxBleConnection -> {
+                    mRxBleConnection = rxBleConnection;
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onDeviceConnected()
+                    );
+                },
+                throwable -> {
+                    LoggingUtil.error(throwable.getMessage());
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_GENERIC)
+                    );
+                }
+            );
     }
 
     public int getBluetoothState() {
