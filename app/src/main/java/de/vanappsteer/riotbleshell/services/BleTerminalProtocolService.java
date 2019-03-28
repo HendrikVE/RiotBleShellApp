@@ -1,7 +1,6 @@
 package de.vanappsteer.riotbleshell.services;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -10,8 +9,7 @@ import com.polidea.rxandroidble2.RxBleDeviceServices;
 
 import java.util.UUID;
 
-import de.vanappsteer.riotbleshell.util.LoggingUtil;
-import io.reactivex.disposables.Disposable;
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService;
 
 public class BleTerminalProtocolService extends GenericBleProtocolService {
 

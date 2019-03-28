@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
-import de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DeviceConnectionListener;
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
 import static de.vanappsteer.riotbleshell.services.BleTerminalProtocolService.BLE_CHARACTERISTIC_UUID_STDIN;
