@@ -13,14 +13,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.R;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
+import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
+
+import static de.vanappsteer.riotbleshell.services.BleTerminalProtocolService.BLE_CHARACTERISTIC_UUID_STDIN;
+import static de.vanappsteer.riotbleshell.services.BleTerminalProtocolService.BLE_CHARACTERISTIC_UUID_STDOUT;
 
 public class BleTerminalActivity extends AppCompatActivity {
 
@@ -30,14 +31,11 @@ public class BleTerminalActivity extends AppCompatActivity {
         SUCCESS
     }
 
-    private final UUID BLE_CHARACTERISTIC_UUID_STDOUT = UUID.fromString("35f28386-3070-4f3b-ba38-27507e991762");
-    private final UUID BLE_CHARACTERISTIC_UUID_STDIN = UUID.fromString("ccdd113f-40d5-4d68-86ac-a728dd82f4aa");
-
     public static final String ACTIVITY_RESULT_KEY_RESULT = "ACTIVITY_RESULT_KEY_RESULT";
 
     public static final String KEY_CHARACTERISTIC_HASH_MAP = "KEY_CHARACTERISTIC_HASH_MAP";
 
-    private BluetoothDeviceConnectionService mDeviceService;
+    private BleTerminalProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
     private TextView mTextViewTerminal;
@@ -70,7 +68,7 @@ public class BleTerminalActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        Intent intent = new Intent(this, BluetoothDeviceConnectionService.class);
+        Intent intent = new Intent(this, BleTerminalProtocolService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -98,7 +96,7 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            BluetoothDeviceConnectionService.LocalBinder binder = (BluetoothDeviceConnectionService.LocalBinder) service;
+            BleTerminalProtocolService.LocalBinder binder = (BleTerminalProtocolService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceService.addDeviceConnectionListener(mDeviceConnectionListener);
             mDeviceServiceBound = true;
@@ -121,14 +119,9 @@ public class BleTerminalActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onCharacteristicWrote(UUID uuid, String value) {
-            mDeviceService.readCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN);
-        }
-
-        @Override
         public void onDeviceConnectionError(int errorCode) {
 
-            LoggingUtil.debug(null);
+            LoggingUtil.debug("" + errorCode);
         }
     };
 }

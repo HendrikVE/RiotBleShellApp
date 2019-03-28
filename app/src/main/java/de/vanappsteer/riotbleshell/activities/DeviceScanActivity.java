@@ -38,7 +38,7 @@ import java.util.Set;
 
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
+import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothAdapterStateListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
@@ -74,7 +74,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private final String KEY_SP_ASKED_FOR_LOCATION = "KEY_SP_ASKED_FOR_LOCATION";
 
-    private BluetoothDeviceConnectionService mDeviceService;
+    private BleTerminalProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
     private Set<RxBleDevice> bleDeviceSet = new HashSet<>();
@@ -110,7 +110,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        Intent intent = new Intent(this, BluetoothDeviceConnectionService.class);
+        Intent intent = new Intent(this, BleTerminalProtocolService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -509,7 +509,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            BluetoothDeviceConnectionService.LocalBinder binder = (BluetoothDeviceConnectionService.LocalBinder) service;
+            BleTerminalProtocolService.LocalBinder binder = (BleTerminalProtocolService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceServiceBound = true;
 

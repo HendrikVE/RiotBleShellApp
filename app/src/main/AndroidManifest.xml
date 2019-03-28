@@ -50,6 +50,9 @@
         <service
             android:name=".services.BluetoothDeviceConnectionService"
             android:exported="false"/>
+        <service
+            android:name=".services.BleTerminalProtocolService"
+            android:exported="false"/>
     </application>
 
 </manifest>
