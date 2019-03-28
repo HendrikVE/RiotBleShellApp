@@ -1,5 +1,6 @@
 package de.vanappsteer.riotbleshell.services;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.plugins.RxJavaPlugins;
 
 public class BluetoothDeviceConnectionService extends Service {
 
@@ -100,25 +102,25 @@ public class BluetoothDeviceConnectionService extends Service {
 
                         case BLUETOOTH_NOT_AVAILABLE:
                             mBluetoothPreconditionStateListenerList.forEach(
-                                    l -> l.onStateChange(BLUETOOTH_NOT_AVAILABLE)
+                                l -> l.onStateChange(BLUETOOTH_NOT_AVAILABLE)
                             );
                             break;
 
                         case LOCATION_PERMISSION_NOT_GRANTED:
                             mBluetoothPreconditionStateListenerList.forEach(
-                                    l -> l.onStateChange(LOCATION_PERMISSION_NOT_GRANTED)
+                                l -> l.onStateChange(LOCATION_PERMISSION_NOT_GRANTED)
                             );
                             break;
 
                         case BLUETOOTH_NOT_ENABLED:
                             mBluetoothPreconditionStateListenerList.forEach(
-                                    l -> l.onStateChange(BLUETOOTH_NOT_ENABLED)
+                                l -> l.onStateChange(BLUETOOTH_NOT_ENABLED)
                             );
                             break;
 
                         case LOCATION_SERVICES_NOT_ENABLED:
                             mBluetoothPreconditionStateListenerList.forEach(
-                                    l -> l.onStateChange(LOCATION_SERVICES_NOT_ENABLED)
+                                l -> l.onStateChange(LOCATION_SERVICES_NOT_ENABLED)
                             );
                             break;
 
@@ -153,7 +155,7 @@ public class BluetoothDeviceConnectionService extends Service {
                 mScanListenerList.forEach(l -> l.onScanResult(scanResult));
             },
             throwable -> {
-                // Handle an error here.
+                // TODO
             }
         );
     }
@@ -253,14 +255,40 @@ public class BluetoothDeviceConnectionService extends Service {
         return mConnectionSubscription.isDisposed();
     }
 
+    @SuppressLint("CheckResult")
     public void readCharacteristic(UUID uuid) {
 
-        mRxBleConnection.readCharacteristic(uuid);
+        mRxBleConnection.readCharacteristic(uuid)
+            .subscribe(
+                characteristicValue -> {
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onCharacteristicRead(uuid, new String(characteristicValue))
+                    );
+                },
+                throwable -> {
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_READ)
+                    );
+                }
+            );
     }
 
+    @SuppressLint("CheckResult")
     public void writeCharacteristic(UUID uuid, byte[] value) {
 
-        mRxBleConnection.writeCharacteristic(uuid, value);
+        mRxBleConnection.writeCharacteristic(uuid, value)
+            .subscribe(
+                characteristicValue -> {
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onCharacteristicWrote(uuid, new String(characteristicValue))
+                    );
+                },
+                throwable -> {
+                    mDeviceConnectionListenerSet.forEach(
+                        l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_READ)
+                    );
+                }
+            );
     }
 
     public void addDeviceConnectionListener(DeviceConnectionListener listener) {

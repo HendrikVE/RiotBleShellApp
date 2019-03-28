@@ -86,10 +86,7 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         updateViews("> " + cmd);
 
-        Map<UUID, String> characteristicMap = new HashMap<>();
-        characteristicMap.put(BLE_CHARACTERISTIC_UUID_STDOUT, cmd);
-
-        // TODO: mDeviceService.writeCharacteristics(characteristicMap);
+        mDeviceService.writeCharacteristic(BLE_CHARACTERISTIC_UUID_STDOUT, cmd.getBytes());
     }
 
     private void updateViews(String additionalText) {
