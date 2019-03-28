@@ -14,6 +14,7 @@ import android.os.IBinder;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.scan.ScanResult;
 import com.polidea.rxandroidble2.scan.ScanSettings;
 
@@ -47,8 +48,6 @@ public class GenericBleProtocolService extends Service {
     public static final int DEVICE_CONNECTION_ERROR_UNSUPPORTED = 2;
     public static final int DEVICE_CONNECTION_ERROR_READ = 3;
     public static final int DEVICE_CONNECTION_ERROR_WRITE = 4;
-
-    private final UUID BLE_SERVICE_UUID = UUID.fromString("e6d54866-0292-4779-b8f8-c52bbec91e71");
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -151,6 +150,14 @@ public class GenericBleProtocolService extends Service {
         disconnectDevice();
     }
 
+    public UUID getServiceUuid() {
+        return null;
+    }
+
+    protected boolean checkSupportedService(RxBleDeviceServices deviceServices) {
+        return true;
+    }
+
     public void startDeviceScan() {
         mScanSubscription = mRxBleClient.scanBleDevices(
             new ScanSettings.Builder().build()
@@ -179,12 +186,28 @@ public class GenericBleProtocolService extends Service {
             .subscribe(
                 rxBleConnection -> {
                     mRxBleConnection = rxBleConnection;
-                    mDeviceConnectionListenerSet.forEach(
-                        l -> l.onDeviceConnected()
+                    mRxBleConnection.discoverServices().subscribe(
+                        deviceServices -> {
+                            if (checkSupportedService(deviceServices)) {
+                                mDeviceConnectionListenerSet.forEach(
+                                    l -> l.onDeviceConnected()
+                                );
+                            }
+                            else {
+                                mDeviceConnectionListenerSet.forEach(
+                                    l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_UNSUPPORTED)
+                                );
+                                disconnectDevice();
+                            }
+                        },
+                        throwable -> {
+                            mDeviceConnectionListenerSet.forEach(
+                                l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_GENERIC)
+                            );
+                        }
                     );
                 },
                 throwable -> {
-                    LoggingUtil.error(throwable.getMessage());
                     mDeviceConnectionListenerSet.forEach(
                         l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_GENERIC)
                     );
