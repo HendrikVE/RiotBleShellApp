@@ -79,6 +79,10 @@ public class BluetoothDeviceConnectionService extends Service {
 
         super.onCreate();
 
+        RxJavaPlugins.setErrorHandler(e -> {
+            LoggingUtil.error(e.getMessage());
+        });
+
         mRxBleClient = RxBleClient.create(this);
 
         mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
