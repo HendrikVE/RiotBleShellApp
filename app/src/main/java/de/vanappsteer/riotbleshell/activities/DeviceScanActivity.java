@@ -39,18 +39,18 @@ import java.util.Set;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothAdapterStateListener;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
+import de.vanappsteer.riotbleshell.services.GenericBleProtocolService.BluetoothAdapterStateListener;
+import de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DeviceConnectionListener;
+import de.vanappsteer.riotbleshell.services.GenericBleProtocolService.ScanListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_GENERIC;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_READ;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_WRITE;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_DISCONNECTED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_OFF;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_ON;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_GENERIC;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_READ;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_WRITE;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.DEVICE_DISCONNECTED;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.STATE_OFF;
+import static de.vanappsteer.riotbleshell.services.GenericBleProtocolService.STATE_ON;
 
 public class DeviceScanActivity extends AppCompatActivity {
 

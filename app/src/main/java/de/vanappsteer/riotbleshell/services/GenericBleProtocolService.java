@@ -29,7 +29,7 @@ import de.vanappsteer.riotbleshell.util.LoggingUtil;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.plugins.RxJavaPlugins;
 
-public class BluetoothDeviceConnectionService extends Service {
+public class GenericBleProtocolService extends Service {
 
     public final static int READY = 0;
     public final static int BLUETOOTH_NOT_AVAILABLE = 1;
@@ -72,7 +72,7 @@ public class BluetoothDeviceConnectionService extends Service {
     private Disposable mScanSubscription;
     private Disposable mConnectionSubscription;
 
-    public BluetoothDeviceConnectionService() { }
+    public GenericBleProtocolService() { }
 
     @Override
     public void onCreate() {
@@ -516,8 +516,8 @@ public class BluetoothDeviceConnectionService extends Service {
 
     public class LocalBinder extends Binder {
 
-        public BluetoothDeviceConnectionService getService() {
-            return BluetoothDeviceConnectionService.this;
+        public GenericBleProtocolService getService() {
+            return GenericBleProtocolService.this;
         }
     }
 

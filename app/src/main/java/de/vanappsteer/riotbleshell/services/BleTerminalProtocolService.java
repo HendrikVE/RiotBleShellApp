@@ -6,9 +6,7 @@ import android.os.IBinder;
 
 import java.util.UUID;
 
-import de.vanappsteer.riotbleshell.util.LoggingUtil;
-
-public class BleTerminalProtocolService extends BluetoothDeviceConnectionService {
+public class BleTerminalProtocolService extends GenericBleProtocolService {
 
     public static final UUID BLE_SERVICE_UUID = UUID.fromString("e6d54866-0292-4779-b8f8-c52bbec91e71");
 
