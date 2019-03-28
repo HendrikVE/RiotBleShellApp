@@ -40,6 +40,12 @@ public class BluetoothDeviceConnectionService extends Service {
     public final static int STATE_ON = 2;
     public final static int STATE_TURNING_OFF = 3;
 
+    public static final int DEVICE_DISCONNECTED = 0;
+    public static final int DEVICE_CONNECTION_ERROR_GENERIC = 1;
+    public static final int DEVICE_CONNECTION_ERROR_UNSUPPORTED = 2;
+    public static final int DEVICE_CONNECTION_ERROR_READ = 3;
+    public static final int DEVICE_CONNECTION_ERROR_WRITE = 4;
+
     private final UUID BLE_SERVICE_UUID = UUID.fromString("e6d54866-0292-4779-b8f8-c52bbec91e71");
 
     private final IBinder mBinder = new LocalBinder();
@@ -167,9 +173,15 @@ public class BluetoothDeviceConnectionService extends Service {
                 .subscribe(
                         rxBleConnection -> {
                             mRxBleConnection = rxBleConnection;
+                            mDeviceConnectionListenerSet.forEach(
+                                    l -> l.onDeviceConnected()
+                            );
                         },
                         throwable -> {
-                            // TODO
+                            LoggingUtil.error(throwable.getMessage());
+                            mDeviceConnectionListenerSet.forEach(
+                                    l -> l.onDeviceConnectionError(DEVICE_CONNECTION_ERROR_GENERIC)
+                            );
                         }
                 );
     }
@@ -478,12 +490,6 @@ public class BluetoothDeviceConnectionService extends Service {
     }
 
     public static class DeviceConnectionListener {
-
-        protected static final int DEVICE_DISCONNECTED = 0;
-        protected static final int DEVICE_CONNECTION_ERROR_GENERIC = 1;
-        protected static final int DEVICE_CONNECTION_ERROR_UNSUPPORTED = 2;
-        protected static final int DEVICE_CONNECTION_ERROR_READ = 3;
-        protected static final int DEVICE_CONNECTION_ERROR_WRITE = 4;
 
         public void onDeviceConnected() {}
         public void onDeviceDisconnected() {}

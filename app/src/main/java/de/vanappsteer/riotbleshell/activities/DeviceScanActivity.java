@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -40,19 +39,18 @@ import java.util.Set;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothPreconditionStateListener;
+import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothAdapterStateListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.ScanListener;
-import de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BluetoothAdapterStateListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_AVAILABLE;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.BLUETOOTH_NOT_ENABLED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_PERMISSION_NOT_GRANTED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.LOCATION_SERVICES_NOT_ENABLED;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.READY;
-import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_ON;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_GENERIC;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_READ;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_CONNECTION_ERROR_WRITE;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.DEVICE_DISCONNECTED;
 import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_OFF;
+import static de.vanappsteer.riotbleshell.services.BluetoothDeviceConnectionService.STATE_ON;
 
 public class DeviceScanActivity extends AppCompatActivity {
 
@@ -137,11 +135,6 @@ public class DeviceScanActivity extends AppCompatActivity {
         stopScan();
     }
 
-    /*@Override
-    protected void onStop() {
-        super.onStop();
-    }*/
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -150,6 +143,7 @@ public class DeviceScanActivity extends AppCompatActivity {
             mDeviceService.removeDeviceConnectionListener(mDeviceConnectionListener);
             mDeviceService.removeBluetoothAdapterStateListener(mBluetoothAdapterStateListener);
             mDeviceService.disconnectDevice();
+
             unbindService(mConnection);
             mDeviceServiceBound = false;
         }
@@ -324,6 +318,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         mAdapter = new DeviceListAdapter();
         mAdapter.setOnDeviceSelectionListener(new DeviceListAdapter.OnDeviceSelectionListener() {
+
             @Override
             public void onDeviceSelected(RxBleDevice device) {
 
@@ -564,6 +559,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     };
 
     private BluetoothAdapterStateListener mBluetoothAdapterStateListener = new BluetoothAdapterStateListener() {
+
         @Override
         public void onStateChange(int state) {
 
