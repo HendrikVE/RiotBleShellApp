@@ -64,8 +64,8 @@ public class BleTerminalProtocolService extends GenericBleProtocolService {
         @Override
         public void onCharacteristicWrote(UUID uuid, String value) {
 
-            if (BLE_CHARACTERISTIC_UUID_STDOUT.equals(uuid)) {
-                readCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN);
+            if (BLE_CHARACTERISTIC_UUID_STDIN.equals(uuid)) {
+                readCharacteristic(BLE_CHARACTERISTIC_UUID_STDOUT);
             }
         }
     };

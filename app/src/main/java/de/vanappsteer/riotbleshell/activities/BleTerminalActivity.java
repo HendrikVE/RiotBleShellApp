@@ -84,7 +84,7 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         updateViews("> " + cmd);
 
-        mDeviceService.writeCharacteristic(BLE_CHARACTERISTIC_UUID_STDOUT, cmd.getBytes());
+        mDeviceService.writeCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN, cmd.getBytes());
     }
 
     private void updateViews(String additionalText) {
@@ -113,7 +113,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         @Override
         public void onCharacteristicRead(UUID uuid, String value) {
 
-            if (BLE_CHARACTERISTIC_UUID_STDIN.equals(uuid)) {
+            if (BLE_CHARACTERISTIC_UUID_STDOUT.equals(uuid)) {
                 updateViews(value);
             }
         }
