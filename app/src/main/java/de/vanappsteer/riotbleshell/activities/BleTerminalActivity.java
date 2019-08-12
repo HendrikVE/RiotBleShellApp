@@ -20,6 +20,7 @@ import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
 import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_DISCONNECTED;
 import static de.vanappsteer.riotbleshell.services.BleTerminalProtocolService.BLE_CHARACTERISTIC_UUID_STDIN;
 import static de.vanappsteer.riotbleshell.services.BleTerminalProtocolService.BLE_CHARACTERISTIC_UUID_STDOUT;
 
@@ -118,7 +119,16 @@ public class BleTerminalActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onDeviceDisconnected() {
+            finish();
+        }
+
+        @Override
         public void onDeviceConnectionError(int errorCode) {
+
+            if (errorCode == DEVICE_DISCONNECTED) {
+                finish();
+            }
 
             LoggingUtil.debug("" + errorCode);
         }
