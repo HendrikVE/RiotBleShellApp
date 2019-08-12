@@ -81,14 +81,11 @@ public class BleTerminalActivity extends AppCompatActivity {
     }
 
     private void sendCommand(String cmd) {
-
-        updateViews("> " + cmd);
-
         mDeviceService.writeCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN, cmd.getBytes());
     }
 
     private void updateViews(String additionalText) {
-        mTextViewTerminal.setText(String.format("%s\n%s", mTextViewTerminal.getText(), additionalText));
+        mTextViewTerminal.setText(String.format("%s%s", mTextViewTerminal.getText(), additionalText));
         mEditTextTerminalInput.setText("");
     }
 
@@ -99,6 +96,8 @@ public class BleTerminalActivity extends AppCompatActivity {
             BleTerminalProtocolService.LocalBinder binder = (BleTerminalProtocolService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceService.addDeviceConnectionListener(mDeviceConnectionListener);
+            mDeviceService.subscribeIndication(BLE_CHARACTERISTIC_UUID_STDOUT);
+
             mDeviceServiceBound = true;
         }
 
@@ -114,7 +113,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         public void onCharacteristicRead(UUID uuid, String value) {
 
             if (BLE_CHARACTERISTIC_UUID_STDOUT.equals(uuid)) {
-                updateViews(value);
+                BleTerminalActivity.this.runOnUiThread(() -> updateViews(value));
             }
         }
 
