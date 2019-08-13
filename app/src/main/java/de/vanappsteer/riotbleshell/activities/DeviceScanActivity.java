@@ -356,14 +356,16 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void checkBluetooth() {
 
-        int adapterState = mDeviceService.getBluetoothAdapterState();
+        if (mDeviceServiceBound) {
+            int adapterState = mDeviceService.getBluetoothAdapterState();
 
-        if (adapterState != STATE_ON) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, ACTIVITY_RESULT_ENABLE_BLUETOOTH);
-        }
-        else {
-            startScan();
+            if (adapterState != STATE_ON) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, ACTIVITY_RESULT_ENABLE_BLUETOOTH);
+            }
+            else {
+                startScan();
+            }
         }
     }
 
