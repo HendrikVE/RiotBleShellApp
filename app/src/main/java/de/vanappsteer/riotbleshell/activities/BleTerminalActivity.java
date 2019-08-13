@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.UUID;
@@ -40,6 +41,7 @@ public class BleTerminalActivity extends AppCompatActivity {
     private boolean mDeviceServiceBound = false;
 
     private TextView mTextViewTerminal;
+    private ScrollView mScrollView;
     private EditText mEditTextTerminalInput;
 
     @Override
@@ -52,8 +54,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mTextViewTerminal = findViewById(R.id.textview_terminal);
-        mTextViewTerminal.setMovementMethod(new ScrollingMovementMethod());
-
+        mScrollView = findViewById(R.id.scrollview_terminal);
         mEditTextTerminalInput = findViewById(R.id.edittext_terminal_input);
 
         Button buttonSend = findViewById(R.id.button_send);
@@ -87,7 +88,13 @@ public class BleTerminalActivity extends AppCompatActivity {
 
     private void updateViews(String additionalText) {
         mTextViewTerminal.setText(String.format("%s%s", mTextViewTerminal.getText(), additionalText));
+        scrollDownScrollView();
         mEditTextTerminalInput.setText("");
+    }
+
+    private void scrollDownScrollView() {
+
+        mScrollView.post(() -> mScrollView.fullScroll(ScrollView.FOCUS_DOWN));
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
