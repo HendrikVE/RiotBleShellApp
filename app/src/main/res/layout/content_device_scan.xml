@@ -21,7 +21,7 @@
 
             <ProgressBar
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                android:id="@+id/scanProgressbar"
+                android:id="@+id/progressbar_scan"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:layout_gravity="center"

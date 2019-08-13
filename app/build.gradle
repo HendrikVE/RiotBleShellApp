@@ -62,6 +62,9 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
+    implementation 'com.jakewharton:butterknife:10.1.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
+
     implementation 'com.polidea.rxandroidble2:rxandroidble:1.9.0'
     implementation project(path: ':genericbleprotocolservice')
 }

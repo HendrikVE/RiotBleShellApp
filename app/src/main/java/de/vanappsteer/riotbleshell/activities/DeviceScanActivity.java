@@ -36,6 +36,8 @@ import com.polidea.rxandroidble2.scan.ScanResult;
 import java.util.HashSet;
 import java.util.Set;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.adapter.DeviceListAdapter;
 import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
@@ -85,8 +87,12 @@ public class DeviceScanActivity extends AppCompatActivity {
     private boolean mScanPaused = false;
 
     private SwitchCompat mScanSwitch;
-    private ProgressBar mScanProgressbar;
-    private TextView mTextViewEnableBluetooth;
+
+    @BindView(R.id.progressbar_scan)
+    protected ProgressBar mScanProgressbar;
+
+    @BindView(R.id.textViewEnableBluetooth)
+    protected TextView mTextViewEnableBluetooth;
 
     private AlertDialog mDialogConnectDevice;
 
@@ -97,6 +103,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
+        ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -304,8 +311,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void initViews() {
         initRecyclerView();
-        mScanProgressbar = findViewById(R.id.scanProgressbar);
-        mTextViewEnableBluetooth = findViewById(R.id.textViewEnableBluetooth);
     }
 
     private void initRecyclerView() {

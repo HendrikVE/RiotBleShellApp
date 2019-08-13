@@ -16,6 +16,9 @@ import android.widget.TextView;
 
 import java.util.UUID;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
 import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
@@ -40,30 +43,24 @@ public class BleTerminalActivity extends AppCompatActivity {
     private BleTerminalProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
-    private TextView mTextViewTerminal;
-    private ScrollView mScrollView;
-    private EditText mEditTextTerminalInput;
+    @BindView(R.id.textview_terminal)
+    protected TextView mTextViewTerminal;
+
+    @BindView(R.id.scrollview_terminal)
+    protected ScrollView mScrollView;
+
+    @BindView(R.id.edittext_terminal_input)
+    protected EditText mEditTextTerminalInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ble_terminal);
+        ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        mTextViewTerminal = findViewById(R.id.textview_terminal);
-        mScrollView = findViewById(R.id.scrollview_terminal);
-        mEditTextTerminalInput = findViewById(R.id.edittext_terminal_input);
-
-        Button buttonSend = findViewById(R.id.button_send);
-        buttonSend.setOnClickListener(view -> {
-            String cmd = mEditTextTerminalInput.getText().toString();
-            if (! "".equals(cmd.trim())) {
-                sendCommand(cmd);
-            }
-        });
     }
 
     @Override
@@ -80,6 +77,14 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         unbindService(mConnection);
         mDeviceServiceBound = false;
+    }
+
+    @OnClick(R.id.button_send)
+    protected void processCmd() {
+        String cmd = mEditTextTerminalInput.getText().toString();
+        if (! "".equals(cmd.trim())) {
+            sendCommand(cmd);
+        }
     }
 
     private void sendCommand(String cmd) {

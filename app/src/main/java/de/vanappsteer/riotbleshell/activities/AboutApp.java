@@ -11,6 +11,8 @@ import android.text.Html;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
@@ -20,6 +22,7 @@ public class AboutApp extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about_app);
+        ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -36,31 +39,31 @@ public class AboutApp extends AppCompatActivity {
 
         TextView textViewVersion = findViewById(R.id.textViewVersion);
         textViewVersion.setText(String.format("%s (%s)", versionName, versionCode));
+    }
 
-        LinearLayout linearLayoutLicense = findViewById(R.id.linearLayoutLicense);
-        linearLayoutLicense.setOnClickListener(view -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(AboutApp.this);
-            builder.setPositiveButton(R.string.action_ok, null);
-            builder.setTitle(R.string.license_title);
+    @OnClick(R.id.linearLayoutLicense)
+    protected void showLicenseDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AboutApp.this);
+        builder.setPositiveButton(R.string.action_ok, null);
+        builder.setTitle(R.string.license_title);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                builder.setMessage(Html.fromHtml(getString(R.string.license_text), Html.FROM_HTML_MODE_LEGACY));
-            }
-            else {
-                builder.setMessage(Html.fromHtml(getString(R.string.license_text)));
-            }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            builder.setMessage(Html.fromHtml(getString(R.string.license_text), Html.FROM_HTML_MODE_LEGACY));
+        }
+        else {
+            builder.setMessage(Html.fromHtml(getString(R.string.license_text)));
+        }
 
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
-        TextView textViewProjectPage = findViewById(R.id.textViewProjectPage);
-        textViewProjectPage.setOnClickListener(view -> {
-            String url = getString(R.string.app_github_project_link);
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
-            startActivity(intent);
-        });
+    @OnClick(R.id.textViewProjectPage)
+    protected void openProjectPage() {
+        String url = getString(R.string.app_github_project_link);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        startActivity(intent);
     }
 
 }
