@@ -18,7 +18,7 @@
             android:id="@+id/scrollview_terminal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/layout_input"
+            android:layout_above="@+id/relativelayout_input"
             android:background="#000000">
 
             <TextView
@@ -32,7 +32,7 @@
         </ScrollView>
 
         <RelativeLayout
-            android:id="@+id/layout_input"
+            android:id="@+id/relativelayout_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

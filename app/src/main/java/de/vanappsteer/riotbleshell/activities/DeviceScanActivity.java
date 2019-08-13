@@ -91,7 +91,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     @BindView(R.id.progressbar_scan)
     protected ProgressBar mScanProgressbar;
 
-    @BindView(R.id.textViewEnableBluetooth)
+    @BindView(R.id.textview_enable_bluetooth)
     protected TextView mTextViewEnableBluetooth;
 
     private AlertDialog mDialogConnectDevice;
@@ -227,7 +227,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         getMenuInflater().inflate(R.menu.scan_menu, menu);
 
-        mScanSwitch = menu.findItem(R.id.menuItemBluetoothSwitch).getActionView().findViewById(R.id.bluetoothScanSwitch);
+        mScanSwitch = menu.findItem(R.id.menuItemBluetoothSwitch).getActionView().findViewById(R.id.switchcompat_bluetooth_scan);
         mScanSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
 
             if (! mScanSwitchEnabled) {
@@ -315,7 +315,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerview);
         recyclerView.setHasFixedSize(true);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);

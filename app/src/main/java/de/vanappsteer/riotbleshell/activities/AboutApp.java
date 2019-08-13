@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import butterknife.ButterKnife;
@@ -37,11 +36,11 @@ public class AboutApp extends AppCompatActivity {
             LoggingUtil.error(e.getMessage());
         }
 
-        TextView textViewVersion = findViewById(R.id.textViewVersion);
+        TextView textViewVersion = findViewById(R.id.textview_version);
         textViewVersion.setText(String.format("%s (%s)", versionName, versionCode));
     }
 
-    @OnClick(R.id.linearLayoutLicense)
+    @OnClick(R.id.linearlayout_license)
     protected void showLicenseDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(AboutApp.this);
         builder.setPositiveButton(R.string.action_ok, null);
@@ -58,7 +57,7 @@ public class AboutApp extends AppCompatActivity {
         dialog.show();
     }
 
-    @OnClick(R.id.textViewProjectPage)
+    @OnClick(R.id.textview_project_page)
     protected void openProjectPage() {
         String url = getString(R.string.app_github_project_link);
         Intent intent = new Intent(Intent.ACTION_VIEW);

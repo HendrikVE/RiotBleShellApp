@@ -83,7 +83,7 @@
                                 android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
                             <TextView
-                                android:id="@+id/textViewProjectPage"
+                                android:id="@+id/textview_project_page"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/github_project_link_text"
@@ -134,7 +134,7 @@
                                 app:fontFamily="sans-serif-medium" />
 
                             <TextView
-                                android:id="@+id/textViewVersion"
+                                android:id="@+id/textview_version"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
@@ -145,7 +145,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/linearLayoutLicense"
+                        android:id="@+id/linearlayout_license"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="?attr/selectableItemBackground"

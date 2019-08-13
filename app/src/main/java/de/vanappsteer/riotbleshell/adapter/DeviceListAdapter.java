@@ -62,7 +62,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
 
-        Button connectButton = holder.getRootView().findViewById(R.id.connectButton);
+        Button connectButton = holder.getRootView().findViewById(R.id.button_connect);
         connectButton.setOnClickListener(view -> mOnDeviceSelectionListener.onDeviceSelected(mDevices.get(holder.getAdapterPosition())));
 
         String deviceName = mDevices.get(position).getName();
@@ -70,10 +70,10 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
             deviceName = "(name not available)";
         }
 
-        TextView textViewDeviceName = holder.getRootView().findViewById(R.id.textViewDeviceName);
+        TextView textViewDeviceName = holder.getRootView().findViewById(R.id.textview_device_name);
         textViewDeviceName.setText(deviceName);
 
-        TextView textViewDeviceAddress = holder.getRootView().findViewById(R.id.textViewDeviceAddress);
+        TextView textViewDeviceAddress = holder.getRootView().findViewById(R.id.textview_device_address);
         textViewDeviceAddress.setText(mDevices.get(position).getMacAddress());
 
     }
