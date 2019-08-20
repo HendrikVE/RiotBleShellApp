@@ -27,7 +27,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="bottom"
                 android:textColor="#00FF00"
-                android:background="#000000"/>
+                android:background="#000000"
+                android:typeface="monospace"/>
 
         </ScrollView>
 
