@@ -4,13 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuItemBluetoothSwitch"
+        android:id="@+id/menuitem_bluetooth_switch"
         android:title="Scan"
         app:actionLayout="@layout/action_layout_bluetooth_switch"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/menuItemAbout"
+        android:id="@+id/menuitem_about"
         android:title="About"
         app:showAsAction="never"/>
 

@@ -227,7 +227,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         getMenuInflater().inflate(R.menu.scan_menu, menu);
 
-        mScanSwitch = menu.findItem(R.id.menuItemBluetoothSwitch).getActionView().findViewById(R.id.switchcompat_bluetooth_scan);
+        mScanSwitch = menu.findItem(R.id.menuitem_bluetooth_switch).getActionView().findViewById(R.id.switchcompat_bluetooth_scan);
         mScanSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
 
             if (! mScanSwitchEnabled) {
@@ -252,10 +252,10 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
 
-            case R.id.menuItemBluetoothSwitch:
+            case R.id.menuitem_bluetooth_switch:
                 return true;
 
-            case R.id.menuItemAbout:
+            case R.id.menuitem_about:
                 Intent intent = new Intent(DeviceScanActivity.this, AboutApp.class);
                 startActivity(intent);
                 return true;
