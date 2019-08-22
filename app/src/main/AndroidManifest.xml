@@ -46,6 +46,11 @@
             android:label="@string/title_activity_about_app"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name="de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService"

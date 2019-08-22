@@ -4,11 +4,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.preference.PreferenceManager;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -42,6 +47,7 @@ public class BleTerminalActivity extends AppCompatActivity {
 
     private BleTerminalProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
+    private SharedPreferences mSharedPreferences;
 
     @BindView(R.id.textview_terminal)
     protected TextView mTextViewTerminal;
@@ -61,6 +67,8 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -77,6 +85,39 @@ public class BleTerminalActivity extends AppCompatActivity {
 
         unbindService(mConnection);
         mDeviceServiceBound = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        int textSize = mSharedPreferences.getInt(getString(R.string.sp_int_terminal_text_size), 6);
+        mTextViewTerminal.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.terminal_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.menuitem_setting:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @OnClick(R.id.button_send)

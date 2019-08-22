@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RIOT OS Bluetooth Shell</string>
+
+    <!--Constants for filenames-->
+    <string name="filename_changelog">changelog.txt</string>
+    <string name="filename_licenses">licenses.html</string>
+
+    <!--values of type "String"-->
+
+    <!--values of type "boolean"-->
+
+    <!--values of type "int"-->
+    <string name="sp_int_terminal_text_size">sp_int_terminal_text_size</string>
+
+    <!--values of type "long"-->
+
+</resources>
