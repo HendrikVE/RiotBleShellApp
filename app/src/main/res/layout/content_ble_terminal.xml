@@ -26,7 +26,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom"
-                android:textColor="#00FF00"
                 android:background="#000000"
                 android:typeface="monospace"/>
 
@@ -48,7 +47,9 @@
                 android:inputType="text"/>
 
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:id="@+id/button_send"
+                android:textColor="@color/text_color_colored_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"

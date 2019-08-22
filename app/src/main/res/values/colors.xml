@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="riot_red">#bd202c</color>
+    <color name="riot_green">#3fa788</color>
+
     <color name="color_primary">#2196F3</color>
     <color name="color_primary_dark">#1976D2</color>
     <color name="color_primary_light">#BBDEFB</color>
-    <color name="text_icons">#FFFFFF</color>
-    <color name="color_accent">#03A9F4</color>
-    <color name="text_color_primary">#212121</color>
-    <color name="text_color_secondary">#757575</color>
-    <color name="divider_color">#BDBDBD</color>
-    <color name="window_background">#fafafa</color>
-    <color name="navigation_bar_color">#000000</color>
+
+    <!--<color name="color_accent">#03A9F4</color>-->
+    <color name="color_accent">@color/riot_red</color>
+
+    <color name="text_color_colored_button">@android:color/white</color>
+    <color name="text_color_primary">@color/riot_green</color>
+    <color name="text_color_secondary">@color/riot_green</color>
 
     <color name="grey_3">#f7f7f7</color>
     <color name="grey_5">#f2f2f2</color>

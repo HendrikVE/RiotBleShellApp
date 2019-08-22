@@ -9,18 +9,11 @@
 
         <item name="colorAccent">@color/color_accent</item>
 
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-
-        <!--
+        <item name="android:textColor">@color/text_color_primary</item>
         <item name="android:textColorPrimary">@color/text_color_primary</item>
         <item name="android:textColorSecondary">@color/text_color_secondary</item>
-        <item name="android:windowBackground">@color/window_background</item>
-        -->
 
-        <!-- requires API level 21
-        <item name="android:navigationBarDividerColor">@color/color_accent</item>
-        <item name="android:navigationBarColor">@color/navigation_bar_color</item>
-        -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

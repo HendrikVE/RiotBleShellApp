@@ -42,7 +42,7 @@
             <Button
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:id="@+id/button_connect"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="@color/text_color_colored_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/action_connect"/>
