@@ -25,6 +25,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.vanappsteer.riotbleshell.R;
+import de.vanappsteer.riotbleshell.dialogs.FavouriteCommandListDialogFragment;
 import de.vanappsteer.riotbleshell.services.BleTerminalProtocolService;
 import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
@@ -109,6 +110,19 @@ public class BleTerminalActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+
+            case R.id.menuitem_favourite_commands:
+                FavouriteCommandListDialogFragment dialogFragment = new FavouriteCommandListDialogFragment();
+                dialogFragment.setOnCommandSelectedListener(new FavouriteCommandListDialogFragment.OnCommandSelectedListener() {
+
+                    @Override
+                    public void onCommandSelected(String command) {
+                        sendCommand(command);
+                        dialogFragment.dismiss();
+                    }
+                });
+                dialogFragment.showNow(getSupportFragmentManager(), "FavouriteCommandListDialogFragment");
+                return true;
 
             case R.id.menuitem_setting:
                 Intent intent = new Intent(this, SettingsActivity.class);

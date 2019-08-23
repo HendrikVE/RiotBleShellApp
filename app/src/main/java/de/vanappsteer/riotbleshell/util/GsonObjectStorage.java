@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 
+import java.lang.reflect.Type;
+
 public class GsonObjectStorage extends PreferenceStorage {
 
     private static GsonObjectStorage instance = null;
@@ -44,6 +46,17 @@ public class GsonObjectStorage extends PreferenceStorage {
     public <T> T loadObject(int stringId, Class<T> classOfT) {
         String key = mContext.getString(stringId);
         return loadObject(key, classOfT);
+    }
+
+    public <T> T loadObject(String key, Type type) {
+        String json = getString(key, null);
+
+        return gson.fromJson(json, type);
+    }
+
+    public <T> T loadObject(int stringId, Type type) {
+        String key = mContext.getString(stringId);
+        return loadObject(key, type);
     }
 
 }

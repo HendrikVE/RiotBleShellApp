@@ -8,6 +8,8 @@
     <string name="filename_licenses">licenses.html</string>
 
     <!--values of type "String"-->
+    <!--gson encoded-->
+    <string name="sp_string_gson_favourite_commands">sp_string_gson_favourite_commands</string>
 
     <!--values of type "boolean"-->
 
