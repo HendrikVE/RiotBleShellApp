@@ -25,6 +25,7 @@
                 android:id="@+id/textview_terminal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="4dp"
                 android:gravity="bottom"
                 android:background="#000000"
                 android:typeface="monospace"/>
