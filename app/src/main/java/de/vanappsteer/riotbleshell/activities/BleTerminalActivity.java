@@ -67,6 +67,8 @@ public class BleTerminalActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setLogo(R.drawable.ic_logo_large);
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

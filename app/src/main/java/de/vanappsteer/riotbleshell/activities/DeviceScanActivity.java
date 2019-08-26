@@ -106,6 +106,8 @@ public class DeviceScanActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setLogo(R.drawable.ic_logo_large);
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
         initViews();
