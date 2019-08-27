@@ -30,6 +30,10 @@
 
     <string name="no_suitable_app_for_intent">No suitable app found!</string>
 
+    <string name="menuitem_scan_title">Scan for devices</string>
+    <string name="menuitem_favourite_commands_title">Favourite commands</string>
+    <string name="menuitem_settings_title">Settings</string>
+
     <string name="preferences_category_title_terminal">Terminal</string>
     <string name="preferences_category_title_more">More</string>
 

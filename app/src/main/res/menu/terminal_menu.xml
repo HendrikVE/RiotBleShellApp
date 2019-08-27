@@ -5,14 +5,14 @@
 
     <item
         android:id="@+id/menuitem_favourite_commands"
-        android:title="Favourite commands"
-        android:icon="@drawable/ic_action_folder_special_white"
+        android:title="@string/menuitem_favourite_commands_title"
+        android:icon="@drawable/ic_action_toolbar_folder_special"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/menuitem_setting"
-        android:title="Settings"
-        android:icon="@drawable/ic_action_settings_white"
+        android:title="@string/menuitem_settings_title"
+        android:icon="@drawable/ic_action_toolbar_settings"
         app:showAsAction="ifRoom"/>
 
 </menu>
