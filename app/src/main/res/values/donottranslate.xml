@@ -18,4 +18,10 @@
 
     <!--values of type "long"-->
 
+    <!--preference keys-->
+    <string name="preference_key_about">preference_key_about</string>
+    <string name="preference_key_app_rating">preference_key_app_rating</string>
+    <string name="preference_key_license">preference_key_license</string>
+    <string name="preference_key_contact_developer">preference_key_contact_developer</string>
+
 </resources>

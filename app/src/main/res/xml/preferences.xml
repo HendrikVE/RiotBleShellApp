@@ -5,11 +5,30 @@
     android:layout_height="match_parent">
 
     <androidx.preference.PreferenceCategory
-        android:title="Terminal">
+        android:title="@string/preferences_category_title_terminal">
 
         <androidx.preference.Preference
             android:key="sp_int_terminal_text_size"
-            android:title="Text size"/>
+            android:title="@string/preference_terminal_text_size_title"/>
+
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preferences_category_title_more">
+
+        <androidx.preference.Preference
+            android:key="@string/preference_key_about"
+            android:title="@string/preference_about_title"/>
+        <androidx.preference.Preference
+            android:key="@string/preference_key_app_rating"
+            android:title="@string/preference_app_rating_title"/>
+        <androidx.preference.Preference
+            android:key="@string/preference_key_license"
+            android:title="@string/preference_license_title"/>
+        <androidx.preference.Preference
+            android:key="@string/preference_key_contact_developer"
+            android:title="@string/preference_contact_developer_title"
+            android:summary="@string/preference_contact_developer_description"/>
 
     </androidx.preference.PreferenceCategory>
 

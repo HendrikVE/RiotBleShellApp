@@ -15,7 +15,7 @@ import butterknife.OnClick;
 import de.vanappsteer.riotbleshell.R;
 import de.vanappsteer.riotbleshell.util.LoggingUtil;
 
-public class AboutApp extends AppCompatActivity {
+public class AboutAppActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,7 @@ public class AboutApp extends AppCompatActivity {
 
     @OnClick(R.id.linearlayout_license)
     protected void showLicenseDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(AboutApp.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(AboutAppActivity.this);
         builder.setPositiveButton(R.string.action_ok, null);
         builder.setTitle(R.string.license_title);
 

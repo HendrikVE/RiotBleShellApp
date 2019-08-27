@@ -251,8 +251,8 @@ public class DeviceScanActivity extends AppCompatActivity {
             case R.id.menuitem_bluetooth_switch:
                 return true;
 
-            case R.id.menuitem_about:
-                Intent intent = new Intent(DeviceScanActivity.this, AboutApp.class);
+            case R.id.menuitem_setting:
+                Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
 

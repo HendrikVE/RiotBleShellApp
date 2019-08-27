@@ -10,8 +10,9 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/menuitem_about"
-        android:title="About"
-        app:showAsAction="never"/>
+        android:id="@+id/menuitem_setting"
+        android:title="Settings"
+        android:icon="@drawable/ic_action_settings_white"
+        app:showAsAction="ifRoom"/>
 
 </menu>

@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
-    android:background="#424242"
+    android:background="@color/alertdialog_background_color"
     android:foreground="?android:attr/selectableItemBackground">
 
     <TextView

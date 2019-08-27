@@ -40,7 +40,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.AboutApp"
+            android:name=".activities.AboutAppActivity"
             android:label="@string/title_activity_about_app"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />

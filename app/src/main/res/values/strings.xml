@@ -14,9 +14,11 @@
     <!-- begin actions -->
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
     <string name="action_save">Save</string>
     <string name="action_connect">Connect</string>
     <string name="action_scan">Scan</string>
+    <string name="action_send_mail">Send E-Mail</string>
     <!-- end actions -->
 
     <!-- begin dialogs -->
@@ -25,6 +27,19 @@
 
     <string name="dialog_coarse_location_permitted_title">Access to location permitted</string>
     <string name="dialog_coarse_location_permitted_message">Please allow access to location, otherwise your device is not able to scan for BLE devices. You need to enable it manually in the app\'s settings page.</string>
+
+    <string name="no_suitable_app_for_intent">No suitable app found!</string>
+
+    <string name="preferences_category_title_terminal">Terminal</string>
+    <string name="preferences_category_title_more">More</string>
+
+    <string name="preference_terminal_text_size_title">Text size</string>
+    <string name="preference_about_title">About</string>
+    <string name="preference_app_rating_title">Rate this app</string>
+    <string name="preference_license_title">Licenses</string>
+    <string name="preference_contact_developer_title">Contact developer</string>
+
+    <string name="preference_contact_developer_description">Send me a description of a bug in the app or submit suggestions for improvement</string>
 
     <string name="dialog_preference_text_size">Change terminal text size</string>
 
