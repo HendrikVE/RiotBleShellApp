@@ -121,12 +121,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, BleTerminalProtocolService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onResume() {
-
-        super.onResume();
 
         if (mScanSwitch != null && (mScanSwitch.isChecked()) || mScanPaused) {
             checkPermissions();
