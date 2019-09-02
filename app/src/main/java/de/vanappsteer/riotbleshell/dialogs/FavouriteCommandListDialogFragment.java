@@ -40,6 +40,11 @@ public class FavouriteCommandListDialogFragment extends DialogFragment {
     private GsonObjectStorage mGsonObjectStorage;
     private OnCommandSelectedListener mOnCommandSelectedListener;
 
+    public static FavouriteCommandListDialogFragment newInstance() {
+
+        return new FavouriteCommandListDialogFragment();
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);

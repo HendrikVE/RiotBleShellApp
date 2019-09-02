@@ -114,7 +114,7 @@ public class BleTerminalActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case R.id.menuitem_favourite_commands:
-                FavouriteCommandListDialogFragment dialogFragment = new FavouriteCommandListDialogFragment();
+                FavouriteCommandListDialogFragment dialogFragment = FavouriteCommandListDialogFragment.newInstance();
                 dialogFragment.setOnCommandSelectedListener(new FavouriteCommandListDialogFragment.OnCommandSelectedListener() {
 
                     @Override
