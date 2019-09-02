@@ -56,7 +56,7 @@ public class FavouriteCommandListDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        mDialogView = LayoutInflater.from(mContext).inflate(R.layout.dialog_favourite_commands, null);
+        mDialogView = View.inflate(mContext, R.layout.dialog_favourite_commands, null);
 
         mGsonObjectStorage = GsonObjectStorage.getInstance(mContext);
 
