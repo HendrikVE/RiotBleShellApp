@@ -145,6 +145,7 @@ public class BleTerminalActivity extends AppCompatActivity {
     }
 
     private void sendCommand(String cmd) {
+        cmd += "\n";
         mDeviceService.writeCharacteristic(BLE_CHARACTERISTIC_UUID_STDIN, cmd.getBytes());
     }
 
