@@ -46,6 +46,8 @@ public class BleTerminalActivity extends AppCompatActivity {
 
     public static final String KEY_CHARACTERISTIC_HASH_MAP = "KEY_CHARACTERISTIC_HASH_MAP";
 
+    private static final int TERMINAL_OUTPUT_CAPACITY = 16384;
+
     private BleTerminalProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
     private SharedPreferences mSharedPreferences;
@@ -150,7 +152,14 @@ public class BleTerminalActivity extends AppCompatActivity {
     }
 
     private void updateViews(String additionalText) {
-        mTextViewTerminal.setText(String.format("%s%s", mTextViewTerminal.getText(), additionalText));
+
+        String terminalOutput = String.format("%s%s", mTextViewTerminal.getText(), additionalText);
+        if (terminalOutput.length() > TERMINAL_OUTPUT_CAPACITY) {
+            terminalOutput = terminalOutput.substring(terminalOutput.length() - TERMINAL_OUTPUT_CAPACITY);
+        }
+
+
+        mTextViewTerminal.setText(terminalOutput);
         scrollDownScrollView();
         mEditTextTerminalInput.setText("");
     }
