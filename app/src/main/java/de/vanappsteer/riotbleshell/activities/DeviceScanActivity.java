@@ -536,23 +536,14 @@ public class DeviceScanActivity extends AppCompatActivity {
                 return;
             }
 
-            boolean added = false;
-
             // update device in set if a name was found after address was already discovered
             RxBleDevice deviceFound = getDeviceByBleAddress(bleDeviceSet, device.getMacAddress());
 
-            if (device.getName() == null) {
-                // ignore devices without a name
-                return;
+            if (deviceFound != null) {
+                bleDeviceSet.remove(deviceFound);
             }
 
-            if (deviceFound != null && deviceFound.getName() == null && device.getName() != null) {
-                bleDeviceSet.remove(deviceFound);
-                added = bleDeviceSet.add(device);
-            }
-            else if(deviceFound == null) {
-                added = bleDeviceSet.add(device);
-            }
+            boolean added = bleDeviceSet.add(device);
 
             if (added) {
                 mAdapter.setDevices(bleDeviceSet);
