@@ -67,7 +67,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
 
         String deviceName = mDevices.get(position).getName();
         if (deviceName == null) {
-            deviceName = "(name not available)";
+            deviceName = "";
         }
 
         TextView textViewDeviceName = holder.getRootView().findViewById(R.id.textview_device_name);
